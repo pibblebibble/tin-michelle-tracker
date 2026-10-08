@@ -146,11 +146,13 @@ function setSeatingStatus(message, tone = '') {
 function renderTablePicker() {
   const picker = document.querySelector('#tablePicker');
   if (!picker) return;
+  const scrolled = picker.scrollLeft; // keep the row of tabs where the person left it
   picker.innerHTML = seatingPlan.map((table, index) => {
     const number = index + 1;
     const assigned = table.filter(Boolean).length;
-    return `<button type="button" class="${selectedTable === number ? 'active' : ''}" onclick="selectTable(${number}, true)" aria-pressed="${selectedTable === number}">${TABLE_LAYOUT[index].label} · ${assigned}/${table.length}</button>`;
+    return `<button type="button" class="${selectedTable === number ? 'active' : ''}" onclick="selectTable(${number})" aria-pressed="${selectedTable === number}">${TABLE_LAYOUT[index].label} · ${assigned}/${table.length}</button>`;
   }).join('');
+  picker.scrollLeft = scrolled;
 }
 
 function seatButton(tableIndex, seatIndex, position = '') {
@@ -208,11 +210,11 @@ function renderFloorplan() {
   if (document.querySelector('#guestPanels')) renderGuests();
 }
 
-function selectTable(number, moveToPlan = false) {
+// Picking a table never moves the page: the chosen table simply appears under the tabs.
+function selectTable(number) {
   selectedTable = number;
   document.querySelectorAll('.floor-table').forEach(table => table.classList.toggle('selected', Number(table.dataset.table) === number));
   renderTablePicker();
-  if (moveToPlan && matchMedia('(max-width: 900px)').matches) document.querySelector('#seatFloorplan')?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 }
 
 function findNameMatches(name, excludeTable, excludeSeat) {
