@@ -3,7 +3,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --canvas: #eef2f7;
+  --canvas: #ffffff;
   --surface: #ffffff;
   --surface-soft: #e7ecf3;
   --surface-accent: #e4ecf8;
@@ -64,7 +64,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(2, 62, 12
   width: 100%;
   min-height: 78px;
   padding: 10px clamp(20px, 3vw, 48px);
-  background: rgba(243, 246, 250, .9);
+  background: rgba(255, 255, 255, .92);
   border-bottom: 1px solid rgba(15, 39, 72, .09);
   box-shadow: 0 1px 12px rgba(15, 39, 72, .03);
   backdrop-filter: saturate(160%) blur(24px);
@@ -131,7 +131,7 @@ button:focus-visible, textarea:focus-visible { outline: 3px solid rgba(2, 62, 12
   width: min(390px, 90vw);
   height: 100dvh;
   padding: 22px;
-  background: rgba(244, 247, 251, .97);
+  background: rgba(255, 255, 255, .98);
   border-left: 1px solid var(--line);
   box-shadow: -18px 0 50px rgba(17, 17, 19, .12);
   backdrop-filter: blur(28px);
