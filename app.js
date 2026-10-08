@@ -583,8 +583,9 @@ function loadGuestCache() {
   return { rows: [], fetchedAt: 0 };
 }
 
+// The passcode is kept for this browser session only: closing the tab or browser locks the tracker again.
 function guestKey() {
-  return localStorage.getItem(GUEST_KEY_STORAGE) || '';
+  return sessionStorage.getItem(GUEST_KEY_STORAGE) || '';
 }
 
 function setGuestStatus(message, tone = '') {
@@ -625,20 +626,14 @@ function guestPanelHtml(title, note, rows, attending) {
 }
 
 function renderGuests() {
-  const connected = Boolean(guestKey());
   const rows = guestData.rows;
   const attending = rows.filter(guest => guest.attending).sort((a, b) => a.name.localeCompare(b.name));
   const declined = rows.filter(guest => !guest.attending).sort((a, b) => a.name.localeCompare(b.name));
   const plusOnes = attending.filter(guest => guest.bringing).length;
   const people = attending.length + plusOnes;
 
-  document.querySelector('#guestConnect').hidden = connected;
-  document.querySelector('#guestLive').hidden = !connected;
-  ['#guestRefresh', '#guestDisconnect'].forEach(id => { document.querySelector(id).hidden = !connected; });
-  document.querySelector('#guestDownload').hidden = !connected || !rows.length;
-  document.querySelector('#homeGuestCount').textContent = connected && guestData.fetchedAt ? String(people) : '—';
-  if (!connected) return;
-
+  document.querySelector('#guestDownload').hidden = !rows.length;
+  document.querySelector('#homeGuestCount').textContent = guestData.fetchedAt ? String(people) : '—';
   document.querySelector('#guestReplies').textContent = String(rows.length);
   document.querySelector('#guestAttending').textContent = String(people);
   document.querySelector('#guestPlusOnes').textContent = String(plusOnes);
@@ -651,32 +646,36 @@ function renderGuests() {
   labelTables();
 }
 
+// Asks the RSVP sheet for the guest list. The passcode travels in the request body, not the address.
+async function requestGuests(key) {
+  const response = await fetch(RSVP_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'guests', key }) });
+  const data = await response.json();
+  if (!data || data.ok !== true || !Array.isArray(data.guests)) throw new Error((data && data.error) || 'Not available');
+  return data.guests.map(normaliseGuest).filter(guest => guest.name);
+}
+
+function storeGuests(rows) {
+  guestData = { rows, fetchedAt: Date.now() };
+  localStorage.setItem(GUEST_CACHE_STORAGE, JSON.stringify(guestData));
+  setGuestStatus(`Live · updated ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`, 'live');
+}
+
 let guestRequest = null;
 
 async function refreshGuests(announce = false) {
   const key = guestKey();
-  if (!key) { renderGuests(); return; }
+  if (!key) return;
   if (guestRequest) return guestRequest;
   if (announce || !guestData.fetchedAt) setGuestStatus('Updating…');
   guestRequest = (async () => {
     try {
-      // The passcode travels in the request body, not the address.
-      const response = await fetch(RSVP_ENDPOINT, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify({ action: 'guests', key }) });
-      const data = await response.json();
-      if (!data || data.ok !== true || !Array.isArray(data.guests)) throw new Error((data && data.error) || 'Not available');
-      guestData = { rows: data.guests.map(normaliseGuest).filter(guest => guest.name), fetchedAt: Date.now() };
-      localStorage.setItem(GUEST_CACHE_STORAGE, JSON.stringify(guestData));
-      setGuestStatus(`Live · updated ${new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}`, 'live');
+      storeGuests(await requestGuests(key));
     } catch (error) {
-      const message = String(error.message || '');
-      if (/wrong passcode/i.test(message)) {
-        localStorage.removeItem(GUEST_KEY_STORAGE);
-        setGuestStatus('That passcode was not accepted. Please try again.', 'error');
-      } else if (/missing required fields|passcode not set/i.test(message)) {
-        setGuestStatus('The RSVP sheet has not been set up to share the guest list yet.', 'error');
-      } else {
-        setGuestStatus(`Could not reach the RSVP sheet${guestData.fetchedAt ? '. Showing the last saved copy.' : '.'}`, 'error');
+      if (/wrong passcode|passcode not set/i.test(String(error.message || ''))) {
+        lockTracker(); // the passcode was changed, so this session is no longer valid
+        return;
       }
+      setGuestStatus(`Could not reach the RSVP sheet${guestData.fetchedAt ? '. Showing the last saved copy.' : '.'}`, 'error');
     } finally {
       guestRequest = null;
       renderGuests();
@@ -700,39 +699,77 @@ function downloadGuestCsv() {
 }
 
 function setupGuests() {
-  const dialog = document.querySelector('#guestKeyDialog');
-  const input = document.querySelector('#guestKeyInput');
-  const closeDialog = () => { if (dialog.open) dialog.close(); };
-  document.querySelector('#guestConnectButton').addEventListener('click', () => { input.value = ''; dialog.showModal(); requestAnimationFrame(() => input.focus()); });
-  document.querySelector('#guestKeyClose').addEventListener('click', closeDialog);
-  document.querySelector('#guestKeyCancel').addEventListener('click', closeDialog);
-  document.querySelector('#guestKeyForm').addEventListener('submit', event => {
-    event.preventDefault();
-    const key = input.value.trim();
-    if (!key) return;
-    localStorage.setItem(GUEST_KEY_STORAGE, key);
-    closeDialog();
-    renderGuests();
-    refreshGuests(true);
-  });
   document.querySelector('#guestRefresh').addEventListener('click', () => refreshGuests(true));
   document.querySelector('#guestDownload').addEventListener('click', downloadGuestCsv);
-  document.querySelector('#guestDisconnect').addEventListener('click', () => {
-    if (!confirm('Disconnect the guest list from this browser? The saved copy of the list is removed too.')) return;
-    localStorage.removeItem(GUEST_KEY_STORAGE);
-    localStorage.removeItem(GUEST_CACHE_STORAGE);
-    guestData = { rows: [], fetchedAt: 0 };
-    setGuestStatus('Not connected.');
-    renderGuests();
-    refreshSeatingRoster();
-  });
-  if (guestKey() && guestData.fetchedAt) setGuestStatus(`Saved copy from ${new Date(guestData.fetchedAt).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', hour12: true })}`);
   renderGuests();
-  refreshGuests();
   // Keep the list fresh while the guest list is on screen.
   setInterval(() => {
     if (document.visibilityState === 'visible' && document.querySelector('#guests').classList.contains('active')) refreshGuests();
   }, 60000);
+}
+
+// ---------- Lock screen ----------
+// The whole tracker sits behind the passcode. It is checked by the RSVP sheet's script, not by
+// this page, and it is asked for again in every new browser session.
+
+function lockTracker() {
+  sessionStorage.removeItem(GUEST_KEY_STORAGE);
+  location.reload();
+}
+
+let appStarted = false;
+
+function startApp() {
+  document.querySelector('#lockScreen').hidden = true;
+  document.querySelector('main.site').hidden = false;
+  if (appStarted) return;
+  appStarted = true;
+  updateCountdown();
+  bindTasks();
+  setupSeatingPlanner();
+  setupGuests();
+  refreshSeatingRoster();
+  document.querySelector('#lockButton').addEventListener('click', lockTracker);
+  showView(location.hash.slice(1) || 'home');
+}
+
+function setupLock() {
+  localStorage.removeItem(GUEST_KEY_STORAGE); // earlier versions remembered the passcode; forget it
+  const form = document.querySelector('#lockForm');
+  const input = document.querySelector('#lockInput');
+  const message = document.querySelector('#lockMessage');
+  const button = form.querySelector('button[type="submit"]');
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    const key = input.value.trim();
+    if (!key) return;
+    button.disabled = true;
+    message.textContent = 'Checking…';
+    try {
+      const rows = await requestGuests(key);
+      sessionStorage.setItem(GUEST_KEY_STORAGE, key);
+      storeGuests(rows);
+      input.value = '';
+      message.textContent = '';
+      startApp();
+    } catch (error) {
+      const reason = String(error.message || '');
+      message.textContent = /wrong passcode/i.test(reason) ? 'That passcode is not right. Please try again.'
+        : /passcode not set|missing required fields/i.test(reason) ? 'The tracker passcode has not been set up on the RSVP sheet yet.'
+        : 'Could not check the passcode. Please check your connection and try again.';
+      input.select();
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  if (guestKey()) {
+    // Same session: open straight away and refresh the list in the background.
+    startApp();
+    refreshGuests();
+  } else {
+    requestAnimationFrame(() => input.focus());
+  }
 }
 
 function labelTables() {
@@ -744,9 +781,4 @@ function labelTables() {
   });
 }
 
-updateCountdown();
-bindTasks();
-setupSeatingPlanner();
-setupGuests();
-refreshSeatingRoster();
-showView(location.hash.slice(1) || 'home');
+setupLock();

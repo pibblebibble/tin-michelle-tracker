@@ -19,14 +19,28 @@ Plain HTML, CSS and JavaScript with no build step. It is based on Vivien's Octob
   phones or laptops. Clearing site data removes them.
 - **Guest list:** read live from the invite's RSVP Google Sheet. Nothing about guests is stored in this repo.
 
+## Passcode
+
+The whole tracker is locked. Opening it shows a passcode screen, and nothing else appears until the passcode is
+accepted. It is asked for again in every new browser session (after the tab or browser is closed); **Lock** in the
+footer locks it straight away.
+
+The passcode is checked by the RSVP Sheet's script, not by this page, so it is not written anywhere in this repo.
+It lives in the Sheet's script under **Project Settings → Script properties** as `TRACKER_KEY`. Change it there
+and everyone has to enter the new one.
+
+What this does and does not protect:
+
+- **Guest data is properly protected.** Names, phone numbers and emails are only sent by the Sheet after the
+  passcode is accepted.
+- **The rest is hidden, not secret.** The rundown and table layout are part of the site's files, and this repo is
+  public, so someone who goes looking in the code could read them. The lock keeps out anyone who simply has
+  the link.
+
 ## Guest list
 
-The tracker asks the invite's Sheet script for the responses and sends a passcode with the request. Each person
-enters the passcode once per browser (**Guest List → Enter passcode**). The list refreshes every minute while the
-page is open, and the last copy is kept in the browser so the seat planner still works offline.
-
-The passcode lives in the Sheet's script under **Project Settings → Script properties** as `TRACKER_KEY`. See the
-invite repo's README for the script itself.
+Once unlocked, the guest list is read live from the invite's RSVP Sheet. It refreshes every minute while the
+Guest List tab is open, and the last copy is kept in the browser so the seat planner still works offline.
 
 ## Pending items
 

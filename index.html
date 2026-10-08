@@ -7,10 +7,23 @@
   <meta name="description" content="Private wedding plan tracker for Tin and Michelle.">
   <title>Tin &amp; Michelle — Wedding Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-  <link rel="stylesheet" href="apple-ui.css?v=20261008-9">
+  <link rel="stylesheet" href="apple-ui.css?v=20261008-10">
 </head>
 <body>
-<main class="site">
+
+<!-- Lock screen: the passcode is checked by the RSVP sheet before anything is shown -->
+<div class="lock-screen" id="lockScreen">
+  <form class="lock-card" id="lockForm">
+    <span class="brand-mark" aria-hidden="true">TM</span>
+    <h1>Tin &amp; Michelle</h1>
+    <p>Wedding plan tracker. Enter the passcode to continue.</p>
+    <label class="seat-name-field" for="lockInput"><span>Passcode</span><input id="lockInput" type="password" maxlength="80" autocomplete="off" required></label>
+    <button class="planner-button planner-button-primary" type="submit">Unlock</button>
+    <p class="lock-message" id="lockMessage" role="status" aria-live="polite"></p>
+  </form>
+</div>
+
+<main class="site" hidden>
   <div class="topbar">
     <button class="site-brand" type="button" data-view="home" aria-label="Open overview">
       <span class="brand-mark" aria-hidden="true">TM</span>
@@ -125,21 +138,14 @@
     </div>
 
     <div class="guest-live-bar">
-      <p class="guest-live-status" id="guestStatus" role="status" aria-live="polite">Not connected.</p>
+      <p class="guest-live-status" id="guestStatus" role="status" aria-live="polite"></p>
       <div class="guest-live-actions">
-        <button class="planner-button planner-button-secondary" id="guestRefresh" type="button" hidden><i class="ph ph-arrows-clockwise" aria-hidden="true"></i>Refresh</button>
+        <button class="planner-button planner-button-secondary" id="guestRefresh" type="button"><i class="ph ph-arrows-clockwise" aria-hidden="true"></i>Refresh</button>
         <button class="planner-button planner-button-secondary" id="guestDownload" type="button" hidden><i class="ph ph-download-simple" aria-hidden="true"></i>Download CSV</button>
-        <button class="planner-button planner-button-secondary" id="guestDisconnect" type="button" hidden>Disconnect</button>
       </div>
     </div>
 
-    <div class="guest-empty" id="guestConnect">
-      <h3>Connect the RSVP sheet</h3>
-      <p>Enter the tracker passcode to load the guest list. It is saved in this browser only, and the list then updates by itself every minute while this page is open.</p>
-      <button class="planner-button planner-button-primary" id="guestConnectButton" type="button"><i class="ph ph-plugs-connected" aria-hidden="true"></i>Enter passcode</button>
-    </div>
-
-    <div id="guestLive" hidden>
+    <div id="guestLive">
       <div class="guest-summary" aria-label="Guest list summary">
         <div><span class="summary-dot total"></span><strong id="guestReplies">0</strong><small>Replies received</small></div>
         <div><span class="summary-dot dinner"></span><strong id="guestAttending">0</strong><small>Guests attending, with plus-ones</small></div>
@@ -151,20 +157,6 @@
     </div>
 
     <div class="bottom-nav"><button type="button" data-view="seating">Seat Planner</button></div>
-
-    <dialog class="seat-dialog" id="guestKeyDialog" aria-labelledby="guestKeyTitle">
-      <form method="dialog" id="guestKeyForm">
-        <button class="seat-dialog-close" type="button" id="guestKeyClose" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
-        <p class="seat-dialog-kicker">Guest list</p>
-        <h3 id="guestKeyTitle">Enter the tracker passcode</h3>
-        <label class="seat-name-field" for="guestKeyInput"><span>Passcode</span><input id="guestKeyInput" type="password" maxlength="80" autocomplete="off" required></label>
-        <div class="seat-dialog-actions">
-          <span></span><span></span>
-          <button class="planner-button planner-button-secondary" type="button" id="guestKeyCancel">Cancel</button>
-          <button class="planner-button planner-button-primary" type="submit">Connect</button>
-        </div>
-      </form>
-    </dialog>
   </section>
 
   <!-- Seat planner -->
@@ -255,10 +247,10 @@
 
   <footer class="site-footer">
     <div><strong>Tin &amp; Michelle</strong><span>Wedding Plan Tracker</span></div>
-    <div class="footer-meta"><span>6 March 2027</span><button class="footer-top" id="backToTop" type="button">Back to top</button></div>
+    <div class="footer-meta"><span>6 March 2027</span><button class="footer-top" id="lockButton" type="button">Lock</button><button class="footer-top" id="backToTop" type="button">Back to top</button></div>
   </footer>
 </main>
 
-<script src="app.js?v=20261008-8"></script>
+<script src="app.js?v=20261008-9"></script>
 </body>
 </html>

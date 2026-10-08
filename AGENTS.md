@@ -57,8 +57,10 @@ changing it resets seat plans saved in people's browsers.
 - **A pasted copy of the Pending Items page is the go-ahead to push** that update. For anything else, ask before pushing.
 - **No build step and no dependencies.** Do not add a framework, bundler or package.json.
 - **The design is approved.** Do not restyle anything unless asked for that specific change.
-- **No guest data in this repo.** The guest list is read live from a Google Sheet and needs a passcode that
-  each person types into the tracker. Never write guest names, phone numbers, emails or the passcode into
+- **The tracker is locked behind a passcode** (see `setupLock` in `app.js`). The RSVP Sheet's script checks it;
+  the page only shows itself once the Sheet accepts it. Do not remove the lock, hard-code a passcode, or add
+  any way around it. To preview your own changes locally you will need the user to unlock it.
+- **No guest data in this repo.** The guest list is read live from a Google Sheet after the passcode is accepted. Never write guest names, phone numbers, emails or the passcode into
   any file, commit message or test.
 - **Do not change `RSVP_ENDPOINT`** in `app.js` unless the user says the Sheet's script has been redeployed
   at a new address.
