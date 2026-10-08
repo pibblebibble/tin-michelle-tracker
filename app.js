@@ -455,32 +455,120 @@ function updateCountdown() {
   document.querySelector('#daysToWedding').textContent = String(Math.max(0, Math.ceil((target - new Date()) / 86400000)));
 }
 
-// ---------- Pending items: an editable to-do list, saved in this browser ----------
+// ---------- Pending items ----------
+// The shared list lives in data/tasks.json in the repo, so everyone sees the same thing.
+// Ticking, adding or removing here changes this browser's copy only. The tracker then offers
+// an export (for Codex or Claude, or as a file) so the change can be saved back to the repo.
 
-function loadTasks() {
+const TASK_FILE = 'data/tasks.json';
+let sharedTasks = [];
+let tasks = [];
+
+function cleanTasks(list) {
+  return (Array.isArray(list) ? list : [])
+    .filter(task => task && cleanName(task.text))
+    .map((task, index) => ({ id: String(task.id || `task-${index + 1}`), text: cleanName(task.text), done: Boolean(task.done) }));
+}
+
+function sameTasks(a, b) {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+function loadLocalTasks() {
   try {
     const saved = JSON.parse(localStorage.getItem(TASK_STORAGE));
-    return Array.isArray(saved) ? saved.filter(task => task && task.id && task.text) : [];
+    return Array.isArray(saved) ? cleanTasks(saved) : null;
   } catch (error) {
-    return [];
+    return null;
   }
 }
 
-let tasks = loadTasks();
+function tasksFileContent() {
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  return JSON.stringify({ updated: today, items: tasks }, null, 2) + '\n';
+}
+
+function tasksPrompt() {
+  return `Please update the pending items in this wedding tracker.\n\nReplace the whole contents of data/tasks.json with the JSON below, exactly as written. Do not change any other file. Then commit with the message "Update pending items" and push.\n\n${tasksFileContent()}`;
+}
 
 function saveTasks() {
-  localStorage.setItem(TASK_STORAGE, JSON.stringify(tasks));
+  if (sameTasks(tasks, sharedTasks)) localStorage.removeItem(TASK_STORAGE);
+  else localStorage.setItem(TASK_STORAGE, JSON.stringify(tasks));
   renderTasks();
+}
+
+function taskChangeCount() {
+  const shared = new Map(sharedTasks.map(task => [task.id, task]));
+  const current = new Map(tasks.map(task => [task.id, task]));
+  let count = 0;
+  tasks.forEach(task => {
+    const before = shared.get(task.id);
+    if (!before || before.done !== task.done || before.text !== task.text) count += 1;
+  });
+  sharedTasks.forEach(task => { if (!current.has(task.id)) count += 1; });
+  return count;
 }
 
 function renderTasks() {
   const list = document.querySelector('#taskList');
   const complete = tasks.filter(task => task.done).length;
+  const changes = taskChangeCount();
   list.innerHTML = tasks.length ? tasks.map(task => `<label class="pending-item"><input type="checkbox" data-task="${escapeHtml(task.id)}"${task.done ? ' checked' : ''}><span class="pending-check"><i class="ph ph-check" aria-hidden="true"></i></span><strong>${escapeHtml(task.text)}</strong><button class="task-remove" type="button" data-remove="${escapeHtml(task.id)}" aria-label="Remove: ${escapeHtml(task.text)}"><i class="ph ph-x" aria-hidden="true"></i></button></label>`).join('') : '<p class="pending-empty">Nothing here yet. Add the first to-do below.</p>';
   document.querySelector('#pendingProgressCount').textContent = `${complete} of ${tasks.length} completed`;
   document.querySelector('#pendingProgressFill').style.width = `${tasks.length ? complete / tasks.length * 100 : 0}%`;
   document.querySelector('#homePendingCount').textContent = String(tasks.length - complete);
   document.querySelector('#pendingSectionCount').textContent = tasks.length ? `${complete} / ${tasks.length} complete` : 'No items yet';
+  document.querySelector('#taskSync').hidden = changes === 0;
+  document.querySelector('#taskSyncText').textContent = `${changes} ${changes === 1 ? 'change is' : 'changes are'} saved in this browser only. Export to save ${changes === 1 ? 'it' : 'them'} to the tracker for everyone.`;
+}
+
+function setTaskMessage(message) {
+  const note = document.querySelector('#taskSyncNote');
+  note.textContent = message;
+  clearTimeout(setTaskMessage.timer);
+  setTaskMessage.timer = setTimeout(() => { note.textContent = ''; }, 4000);
+}
+
+async function copyTasksPrompt() {
+  const text = tasksPrompt();
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (error) {
+    // Older browsers, or a page without clipboard permission
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand('copy');
+    area.remove();
+  }
+  setTaskMessage('Copied. Paste it into Codex or Claude in the tracker’s folder.');
+}
+
+function downloadTasksFile() {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(new Blob([tasksFileContent()], { type: 'application/json' }));
+  link.download = 'tasks.json';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(link.href), 2000);
+  setTaskMessage('Downloaded. Replace data/tasks.json in the repo with this file.');
+}
+
+async function loadSharedTasks() {
+  try {
+    const response = await fetch(`${TASK_FILE}?t=${Date.now()}`, { cache: 'no-store' });
+    sharedTasks = cleanTasks((await response.json()).items);
+  } catch (error) {
+    sharedTasks = [];
+  }
+  const local = loadLocalTasks();
+  tasks = local && !sameTasks(local, sharedTasks) ? local : sharedTasks.map(task => ({ ...task }));
+  saveTasks();
 }
 
 function bindTasks() {
@@ -503,11 +591,19 @@ function bindTasks() {
     const input = document.querySelector('#taskInput');
     const text = cleanName(input.value);
     if (!text) return;
-    tasks.push({ id: String(Date.now()), text, done: false });
+    tasks.push({ id: `task-${Date.now()}`, text, done: false });
     input.value = '';
     saveTasks();
   });
+  document.querySelector('#taskCopy').addEventListener('click', copyTasksPrompt);
+  document.querySelector('#taskDownload').addEventListener('click', downloadTasksFile);
+  document.querySelector('#taskDiscard').addEventListener('click', () => {
+    if (!confirm('Discard the changes made in this browser and go back to the shared list?')) return;
+    tasks = sharedTasks.map(task => ({ ...task }));
+    saveTasks();
+  });
   renderTasks();
+  loadSharedTasks();
 }
 
 // ---------- Guest list: read live from the invite's RSVP sheet ----------

@@ -7,7 +7,7 @@
   <meta name="description" content="Private wedding plan tracker for Tin and Michelle.">
   <title>Tin &amp; Michelle — Wedding Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-  <link rel="stylesheet" href="apple-ui.css?v=20261008-1">
+  <link rel="stylesheet" href="apple-ui.css?v=20261008-3">
 </head>
 <body>
 <main class="site">
@@ -250,6 +250,15 @@
       <article class="pending-group">
         <h3><time datetime="2027-03-06"><span class="pending-day">6</span><span class="pending-month">March</span></time><span class="pending-event">Wedding Day</span><span class="pending-section-count" id="pendingSectionCount">0 / 0 complete</span></h3>
         <div class="pending-list">
+          <div class="task-sync" id="taskSync" hidden>
+            <p id="taskSyncText"></p>
+            <div class="task-sync-actions">
+              <button class="planner-button planner-button-primary" id="taskCopy" type="button"><i class="ph ph-copy" aria-hidden="true"></i>Copy update for Codex / Claude</button>
+              <button class="planner-button planner-button-secondary" id="taskDownload" type="button"><i class="ph ph-download-simple" aria-hidden="true"></i>Download tasks.json</button>
+              <button class="planner-button planner-button-secondary" id="taskDiscard" type="button">Discard my changes</button>
+            </div>
+            <p class="task-sync-note" id="taskSyncNote" role="status" aria-live="polite"></p>
+          </div>
           <div id="taskList"></div>
           <form class="task-add" id="taskForm">
             <input id="taskInput" type="text" maxlength="160" placeholder="Add a to-do, for example: confirm the photobooth vendor" aria-label="New to-do" autocomplete="off" required>
@@ -266,6 +275,6 @@
   </footer>
 </main>
 
-<script src="app.js?v=20261008-2"></script>
+<script src="app.js?v=20261008-3"></script>
 </body>
 </html>
