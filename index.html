@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow,noarchive,nosnippet,noimageindex">
+  <meta name="description" content="Private wedding plan tracker for Tin and Michelle.">
+  <title>Tin &amp; Michelle — Wedding Tracker</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
+  <link rel="stylesheet" href="apple-ui.css?v=20261008-1">
+</head>
+<body>
+<main class="site">
+  <div class="topbar">
+    <button class="site-brand" type="button" data-view="home" aria-label="Open overview">
+      <span class="brand-mark" aria-hidden="true">TM</span>
+      <span>Tin &amp; Michelle</span>
+    </button>
+    <nav class="desktop-nav" aria-label="Primary navigation">
+      <button type="button" data-view="home">Overview</button>
+      <button type="button" data-view="rundown">Rundown</button>
+      <button type="button" data-view="guests">Guest List</button>
+      <button type="button" data-view="seating">Seat Planner</button>
+      <button type="button" data-view="pending">Pending Items</button>
+    </nav>
+    <button class="icon-button" id="menuButton" type="button" aria-label="Open menu" aria-expanded="false"><i class="ph ph-list" aria-hidden="true"></i></button>
+  </div>
+
+  <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
+  <nav class="site-menu" id="siteMenu" aria-label="Site navigation" aria-hidden="true">
+    <button class="drawer-close" id="drawerClose" type="button" aria-label="Close menu"><i class="ph ph-x" aria-hidden="true"></i></button>
+    <div class="drawer-links">
+      <button type="button" data-view="home"><i class="ph ph-house" aria-hidden="true"></i>Overview</button>
+      <button type="button" data-view="rundown"><i class="ph ph-clock" aria-hidden="true"></i>Rundown</button>
+      <button type="button" data-view="guests"><i class="ph ph-users" aria-hidden="true"></i>Guest List</button>
+      <button type="button" data-view="seating"><i class="ph ph-table" aria-hidden="true"></i>Seat Planner</button>
+      <button type="button" data-view="pending"><i class="ph ph-check-square" aria-hidden="true"></i>Pending Items</button>
+    </div>
+  </nav>
+
+  <!-- Overview -->
+  <section class="view active" id="home">
+    <div class="hero">
+      <div class="home-heading">
+        <p class="home-kicker"><span>6 March 2027</span><span aria-hidden="true">|</span><span>Plan Tracker</span></p>
+        <h1>Tin &amp; Michelle Wedding Plan</h1>
+        <p class="home-updated">Last updated: 8 Oct 2026</p>
+      </div>
+
+      <div class="dashboard-grid">
+        <div class="dashboard-main">
+          <div class="home-stats" aria-label="Wedding plan summary">
+            <div><span class="stat-icon"><i class="ph ph-calendar-blank" aria-hidden="true"></i></span><p><strong id="daysToWedding">0</strong><span>Days to go</span></p></div>
+            <div><span class="stat-icon"><i class="ph ph-users" aria-hidden="true"></i></span><p><strong id="homeGuestCount">—</strong><span>Guests attending</span></p></div>
+            <div><span class="stat-icon"><i class="ph ph-check-square" aria-hidden="true"></i></span><p><strong id="homePendingCount">0</strong><span>Tasks pending</span></p></div>
+          </div>
+
+          <div class="menu" aria-label="Quick links">
+            <button type="button" data-view="rundown"><span class="menu-icon"><i class="ph ph-clock" aria-hidden="true"></i></span><span><strong>Rundown</strong><small>The programme for the evening</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" data-view="guests"><span class="menu-icon"><i class="ph ph-users" aria-hidden="true"></i></span><span><strong>Guest List</strong><small>Live RSVPs, plus-ones and dietary notes</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" data-view="seating"><span class="menu-icon"><i class="ph ph-table" aria-hidden="true"></i></span><span><strong>Seat Planner</strong><small>Arrange the tables and export the plan</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+            <button type="button" data-view="pending"><span class="menu-icon"><i class="ph ph-check-square" aria-hidden="true"></i></span><span><strong>Pending Items</strong><small>Outstanding confirmations and decisions</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
+          </div>
+        </div>
+
+        <aside class="next-up" aria-label="Key dates">
+          <div class="section-title"><h2>Next up</h2><button type="button" data-view="rundown">View rundown</button></div>
+          <button class="upcoming-event" type="button" data-view="guests">
+            <time datetime="2026-11-30"><span>Nov</span><strong>30</strong><small>Mon</small></time>
+            <span><small>2026</small><strong>RSVP Deadline</strong><span><i class="ph ph-envelope-simple" aria-hidden="true"></i>Replies close</span></span>
+          </button>
+          <button class="upcoming-event" type="button" data-view="rundown">
+            <time datetime="2027-03-06T18:00:00+08:00"><span>Mar</span><strong>06</strong><small>Sat</small></time>
+            <span><small>6:00 PM</small><strong>Dinner Reception</strong><span><i class="ph ph-map-pin" aria-hidden="true"></i>English Tea House</span></span>
+          </button>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rundown -->
+  <section class="view" id="rundown">
+    <div class="page-head">
+      <button class="back" type="button" data-view="home">Overview</button>
+      <h2>Rundown</h2>
+      <p>The current programme concept. Timings will be confirmed closer to the day.</p>
+    </div>
+
+    <article class="event-card" id="dinner-reception">
+      <header class="event-card-header">
+        <h3>Dinner Reception</h3>
+        <p class="event-place"><i class="ph ph-map-pin" aria-hidden="true"></i>English Tea House by Grand Margherita Hotel, Petra Jaya, Kuching</p>
+        <div class="event-meta"><span>6 March 2027</span><span>6:00–9:30 PM</span></div>
+      </header>
+      <div class="event-schedule">
+        <h4>Current programme concept</h4>
+        <ol>
+          <li class="schedule-with-notes"><time>6:00 PM</time><div class="schedule-entry"><span>Guest arrival.</span><ul class="schedule-points"><li>Registration</li><li>Welcome drinks</li><li>Photobooth opens</li></ul></div></li>
+          <li class="schedule-with-notes"><time>6:45 PM</time><div class="schedule-entry"><span>First entrance.</span><ul class="schedule-points"><li>Michelle enters with her mum</li><li>Mum passes Michelle’s hand to Tin</li><li>A short family and couple moment</li></ul></div></li>
+          <li><time>6:52 PM</time><span>Welcome and thank-you.</span></li>
+          <li><time>7:00 PM</time><span>Family acknowledgement.</span></li>
+          <li><time>7:05 PM</time><span>Cake cutting.</span></li>
+          <li><time>7:10 PM</time><span>Buffet opens.</span></li>
+          <li><time>7:10–8:00 PM</time><span>Dinner, table photos and photobooth.</span></li>
+          <li class="schedule-with-notes"><time>8:00 PM</time><div class="schedule-entry"><span>QR quiz: “10 Years of Tin &amp; Michelle”.</span><ul class="schedule-points"><li>10 to 15 multiple-choice questions</li><li>Live leaderboard</li><li>Prizes for the top 3</li></ul></div></li>
+          <li><time>8:20 PM</time><span>Speeches.</span></li>
+          <li class="schedule-with-notes"><time>8:35 PM</time><div class="schedule-entry"><span>Second entrance.</span><ul class="schedule-points"><li>Tin and Michelle enter together</li><li>An upbeat, fun song</li></ul></div></li>
+          <li><time>8:38 PM</time><span>Couple’s toast.</span></li>
+          <li><time>8:45 PM</time><span>Group and family photos.</span></li>
+          <li><time>9:00 PM</time><span>Dessert, free and easy, photobooth continues.</span></li>
+          <li><time>9:30 PM</time><span>Final thank-you.</span></li>
+        </ol>
+      </div>
+    </article>
+
+    <div class="bottom-nav"><button type="button" data-view="guests">Guest List</button></div>
+  </section>
+
+  <!-- Guest list: read live from the RSVP sheet -->
+  <section class="view" id="guests">
+    <div class="page-head">
+      <button class="back" type="button" data-view="home">Overview</button>
+      <h2>Guest List</h2>
+      <p>Replies from the wedding invite, straight from the RSVP sheet.</p>
+    </div>
+
+    <div class="guest-live-bar">
+      <p class="guest-live-status" id="guestStatus" role="status" aria-live="polite">Not connected.</p>
+      <div class="guest-live-actions">
+        <button class="planner-button planner-button-secondary" id="guestRefresh" type="button" hidden><i class="ph ph-arrows-clockwise" aria-hidden="true"></i>Refresh</button>
+        <button class="planner-button planner-button-secondary" id="guestDownload" type="button" hidden><i class="ph ph-download-simple" aria-hidden="true"></i>Download CSV</button>
+        <button class="planner-button planner-button-secondary" id="guestDisconnect" type="button" hidden>Disconnect</button>
+      </div>
+    </div>
+
+    <div class="guest-empty" id="guestConnect">
+      <h3>Connect the RSVP sheet</h3>
+      <p>Enter the tracker passcode to load the guest list. It is saved in this browser only, and the list then updates by itself every minute while this page is open.</p>
+      <button class="planner-button planner-button-primary" id="guestConnectButton" type="button"><i class="ph ph-plugs-connected" aria-hidden="true"></i>Enter passcode</button>
+    </div>
+
+    <div id="guestLive" hidden>
+      <div class="guest-summary" aria-label="Guest list summary">
+        <div><span class="summary-dot total"></span><strong id="guestReplies">0</strong><small>Replies received</small></div>
+        <div><span class="summary-dot dinner"></span><strong id="guestAttending">0</strong><small>Guests attending, with plus-ones</small></div>
+        <div><span class="summary-dot reception"></span><strong id="guestPlusOnes">0</strong><small>Plus-ones</small></div>
+        <div><span class="summary-dot total"></span><strong id="guestDeclined">0</strong><small>Declined</small></div>
+      </div>
+      <p class="guest-summary-note" id="guestSummaryNote"></p>
+      <div class="guest-panels" id="guestPanels"></div>
+    </div>
+
+    <div class="bottom-nav"><button type="button" data-view="seating">Seat Planner</button></div>
+
+    <dialog class="seat-dialog" id="guestKeyDialog" aria-labelledby="guestKeyTitle">
+      <form method="dialog" id="guestKeyForm">
+        <button class="seat-dialog-close" type="button" id="guestKeyClose" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+        <p class="seat-dialog-kicker">Guest list</p>
+        <h3 id="guestKeyTitle">Enter the tracker passcode</h3>
+        <label class="seat-name-field" for="guestKeyInput"><span>Passcode</span><input id="guestKeyInput" type="password" maxlength="80" autocomplete="off" required></label>
+        <div class="seat-dialog-actions">
+          <span></span><span></span>
+          <button class="planner-button planner-button-secondary" type="button" id="guestKeyCancel">Cancel</button>
+          <button class="planner-button planner-button-primary" type="submit">Connect</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+
+  <!-- Seat planner -->
+  <section class="view" id="seating">
+    <div class="page-head seating-head">
+      <button class="back" type="button" data-view="home">Overview</button>
+      <div>
+        <h2 id="seatingPageTitle">Seat Planner</h2>
+        <p>Select a table, then choose a seat to add or edit a name.</p>
+      </div>
+    </div>
+
+    <div class="seat-planner-toolbar">
+      <div class="seat-planner-summary" aria-label="Seating plan summary">
+        <p><strong id="seatingAssignedCount">0</strong><span>Assigned</span></p>
+        <p><strong id="seatingOpenCount">0</strong><span>Open seats</span></p>
+        <p><strong id="seatingTableCount">0</strong><span>Tables</span></p>
+      </div>
+      <div class="seat-planner-actions">
+        <label class="document-name-field" for="seatingDocumentName">
+          <span>Document name</span>
+          <input id="seatingDocumentName" type="text" maxlength="80" value="Tin &amp; Michelle — Reception Seat Plan" autocomplete="off">
+        </label>
+        <label class="document-name-field seat-version-field" for="seatingVersion">
+          <span>Version</span>
+          <input id="seatingVersion" type="text" maxlength="12" value="v1" autocomplete="off">
+        </label>
+        <button class="planner-button planner-button-secondary" type="button" onclick="saveSeatingPlan()"><i class="ph ph-floppy-disk" aria-hidden="true"></i>Save plan</button>
+        <button class="planner-button planner-button-primary" type="button" onclick="printSeatingPlan()"><i class="ph ph-printer" aria-hidden="true"></i>Print / Save PDF</button>
+      </div>
+    </div>
+
+    <div class="table-picker" id="tablePicker" aria-label="Choose a table"></div>
+    <div class="seat-planner-message" id="seatingSaveStatus" role="status" aria-live="polite">Changes are saved in this browser.</div>
+    <details class="version-history" id="versionHistory" hidden>
+      <summary>Exported versions</summary>
+      <ul id="versionHistoryList"></ul>
+    </details>
+    <div class="seat-floorplan-scroll">
+      <div class="seat-floorplan" id="seatFloorplan" aria-label="Reception seating floor plan"></div>
+    </div>
+    <p class="seating-note"><i class="ph ph-info" aria-hidden="true"></i>The layout follows the venue plan: buffet along the top, three rows of six-seat tables, and the main table on the left.</p>
+    <div class="unassigned-remark" id="unassignedRemark" aria-live="polite">
+      <i class="ph ph-check-circle" aria-hidden="true"></i>
+      <div>
+        <strong id="unassignedSummary"></strong>
+        <ul id="unassignedGuestList" aria-label="Attending guests without an assigned seat" hidden></ul>
+      </div>
+    </div>
+    <div class="bottom-nav"><button type="button" data-view="guests">Guest List</button></div>
+
+    <dialog class="seat-dialog" id="seatDialog" aria-labelledby="seatDialogTitle">
+      <form method="dialog" id="seatForm" onsubmit="submitSeatName(event)">
+        <button class="seat-dialog-close" type="button" onclick="closeSeatDialog()" aria-label="Close"><i class="ph ph-x" aria-hidden="true"></i></button>
+        <p class="seat-dialog-kicker" id="seatDialogLocation">Table A1 · Seat 1</p>
+        <h3 id="seatDialogTitle">Add a guest</h3>
+        <label class="seat-name-field" for="seatNameInput"><span>Guest name</span><input id="seatNameInput" type="text" maxlength="80" autocomplete="off" list="seatingGuestNames" required></label>
+        <datalist id="seatingGuestNames"></datalist>
+        <div class="seat-duplicate-warning" id="seatDuplicateWarning" role="alert" hidden>
+          <p id="seatMatchMessage"></p>
+          <div class="seat-match-list" id="seatMatchList"></div>
+        </div>
+        <div class="seat-dialog-actions">
+          <button class="planner-button planner-button-danger" id="clearSeatButton" type="button" onclick="clearCurrentSeat()">Clear seat</button>
+          <span></span>
+          <button class="planner-button planner-button-secondary" type="button" onclick="closeSeatDialog()">Cancel</button>
+          <button class="planner-button planner-button-primary" id="saveSeatButton" type="submit">Save name</button>
+        </div>
+      </form>
+    </dialog>
+  </section>
+
+  <!-- Pending items -->
+  <section class="view" id="pending">
+    <div class="page-head">
+      <button class="back" type="button" data-view="home">Overview</button>
+      <h2>Pending Items</h2>
+      <p id="pendingProgressCount">0 of 0 completed</p>
+    </div>
+
+    <div class="pending-progress" aria-hidden="true"><span id="pendingProgressFill"></span></div>
+    <div class="pending-content">
+      <article class="pending-group">
+        <h3><time datetime="2027-03-06"><span class="pending-day">6</span><span class="pending-month">March</span></time><span class="pending-event">Wedding Day</span><span class="pending-section-count" id="pendingSectionCount">0 / 0 complete</span></h3>
+        <div class="pending-list">
+          <div id="taskList"></div>
+          <form class="task-add" id="taskForm">
+            <input id="taskInput" type="text" maxlength="160" placeholder="Add a to-do, for example: confirm the photobooth vendor" aria-label="New to-do" autocomplete="off" required>
+            <button class="planner-button planner-button-primary" type="submit"><i class="ph ph-plus" aria-hidden="true"></i>Add</button>
+          </form>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div><strong>Tin &amp; Michelle</strong><span>Wedding Plan Tracker</span></div>
+    <div class="footer-meta"><span>6 March 2027</span><button class="footer-top" id="backToTop" type="button">Back to top</button></div>
+  </footer>
+</main>
+
+<script src="app.js?v=20261008-1"></script>
+</body>
+</html>
