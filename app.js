@@ -456,12 +456,12 @@ function updateCountdown() {
 }
 
 // ---------- Pending items ----------
-// The list itself lives in data/tasks.json and is changed by asking Codex or Claude
-// ("add a pending item: ..."). On the page you only tick things off. Ticks are kept in
-// this browser, and "Copy status" turns them into a note to paste back to the assistant.
+// The list lives in data/tasks.json, grouped under a date and a title, and is changed by asking
+// Codex or Claude. On the page you only tick things off; ticks are kept in this browser and
+// go out with the Updates export.
 
 const TASK_FILE = 'data/tasks.json';
-let tasks = [];
+let taskGroups = [];
 let taskTicks = loadTaskTicks();
 
 function loadTaskTicks() {
@@ -473,32 +473,135 @@ function loadTaskTicks() {
   }
 }
 
+function allTasks() {
+  return taskGroups.flatMap(group => group.items);
+}
+
 function taskDone(task) {
   return Object.prototype.hasOwnProperty.call(taskTicks, task.id) ? Boolean(taskTicks[task.id]) : task.done;
 }
 
+function groupDateParts(value) {
+  const date = /^\d{4}-\d{2}-\d{2}$/.test(value || '') ? new Date(`${value}T00:00:00`) : null;
+  if (!date || Number.isNaN(date.getTime())) return null;
+  return { day: String(date.getDate()), month: date.toLocaleDateString('en-GB', { month: 'long' }), long: date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) };
+}
+
 function renderTasks() {
-  const list = document.querySelector('#taskList');
+  const tasks = allTasks();
   const complete = tasks.filter(taskDone).length;
-  list.innerHTML = tasks.length ? tasks.map(task => `<label class="pending-item"><input type="checkbox" data-task="${escapeHtml(task.id)}"${taskDone(task) ? ' checked' : ''}><span class="pending-check"><i class="ph ph-check" aria-hidden="true"></i></span><strong>${escapeHtml(task.text)}</strong></label>`).join('') : '<p class="pending-empty">No pending items yet. To add one, tell Codex or Claude, for example: “Add a pending item: confirm the photobooth vendor.”</p>';
+  document.querySelector('#pendingGroups').innerHTML = taskGroups.map(group => {
+    const done = group.items.filter(taskDone).length;
+    const parts = groupDateParts(group.date);
+    const time = parts ? `<time datetime="${escapeHtml(group.date)}"><span class="pending-day">${parts.day}</span><span class="pending-month">${parts.month}</span></time>` : '';
+    const count = group.items.length ? `${done} / ${group.items.length} complete` : 'No items yet';
+    const items = group.items.length ? group.items.map(task => `<label class="pending-item"><input type="checkbox" data-task="${escapeHtml(task.id)}"${taskDone(task) ? ' checked' : ''}><span class="pending-check"><i class="ph ph-check" aria-hidden="true"></i></span><strong>${escapeHtml(task.text)}</strong></label>`).join('') : '<p class="pending-empty">Nothing here yet.</p>';
+    return `<article class="pending-group"><h3>${time}<span class="pending-event">${escapeHtml(group.title)}</span><span class="pending-section-count">${count}</span></h3><div class="pending-list">${items}</div></article>`;
+  }).join('');
   document.querySelector('#pendingProgressCount').textContent = `${complete} of ${tasks.length} completed`;
   document.querySelector('#pendingProgressFill').style.width = `${tasks.length ? complete / tasks.length * 100 : 0}%`;
   document.querySelector('#homePendingCount').textContent = String(tasks.length - complete);
-  document.querySelector('#pendingSectionCount').textContent = tasks.length ? `${complete} / ${tasks.length} complete` : 'No items yet';
-  document.querySelector('#taskExport').hidden = tasks.length === 0;
+  renderUpdatePreview();
 }
 
-// A plain note the assistant can act on: what is ticked here, and what is still open.
-function taskStatusText() {
+async function loadTasks() {
+  let data = {};
+  try {
+    const response = await fetch(`${TASK_FILE}?t=${Date.now()}`, { cache: 'no-store' });
+    data = await response.json();
+  } catch (error) {}
+  const groups = Array.isArray(data.groups) ? data.groups : [{ id: 'wedding-day', date: '2027-03-06', title: 'Wedding Day', items: data.items }];
+  taskGroups = groups.filter(group => group && cleanName(group.title)).map((group, groupIndex) => ({
+    id: String(group.id || `group-${groupIndex + 1}`),
+    date: String(group.date || ''),
+    title: cleanName(group.title),
+    items: (Array.isArray(group.items) ? group.items : []).filter(task => task && cleanName(task.text)).map((task, index) => ({ id: String(task.id || `${group.id || groupIndex}-${index + 1}`), text: cleanName(task.text), done: Boolean(task.done) }))
+  }));
+  // Forget ticks that now agree with the shared list, or belong to items that were removed.
+  const known = new Map(allTasks().map(task => [task.id, task]));
+  Object.keys(taskTicks).forEach(id => {
+    if (!known.has(id) || known.get(id).done === Boolean(taskTicks[id])) delete taskTicks[id];
+  });
+  localStorage.setItem(TASK_STORAGE, JSON.stringify(taskTicks));
+  renderTasks();
+}
+
+function bindTasks() {
+  document.querySelector('#pendingGroups').addEventListener('change', event => {
+    const id = event.target.dataset.task;
+    if (!id) return;
+    taskTicks[id] = event.target.checked;
+    localStorage.setItem(TASK_STORAGE, JSON.stringify(taskTicks));
+    renderTasks();
+  });
+  renderTasks();
+  loadTasks();
+}
+
+// ---------- Updates: notes for Codex or Claude ----------
+// Anything that should change on the tracker (a new date, a new title, a rundown tweak, a new
+// pending item) is noted here in plain fields. One button copies the notes, together with the
+// current ticks, as a single message to paste to the assistant.
+
+const NOTE_STORAGE = STORE + 'change-notes';
+let changeNotes = loadChangeNotes();
+
+function loadChangeNotes() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(NOTE_STORAGE));
+    return Array.isArray(saved) ? saved.filter(note => note && note.id) : [];
+  } catch (error) {
+    return [];
+  }
+}
+
+function saveChangeNotes() {
+  localStorage.setItem(NOTE_STORAGE, JSON.stringify(changeNotes));
+  renderChangeNotes();
+}
+
+function updatesText() {
   const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  const done = tasks.filter(taskDone);
-  const open = tasks.filter(task => !taskDone(task));
-  const lines = items => items.length ? items.map(task => `- ${task.text}`).join('\n') : '- (none)';
-  return `Pending items status from the wedding tracker, ${today}.\n\nPlease update data/tasks.json so it matches this, then commit and push.\n\nDone:\n${lines(done)}\n\nStill open:\n${lines(open)}\n`;
+  const parts = [`Updates for the Tin & Michelle wedding tracker, ${today}.`, 'Please apply everything below to the tracker, then commit and push.'];
+  if (changeNotes.length) {
+    parts.push('Changes requested:\n' + changeNotes.map((note, index) => {
+      const head = [note.title, note.date].filter(Boolean).join(' — ');
+      const lines = [`${index + 1}. [${note.section}] ${head || '(no title)'}`];
+      if (note.details) lines.push(`   ${note.details.replace(/\n/g, '\n   ')}`);
+      return lines.join('\n');
+    }).join('\n'));
+  }
+  const tasks = allTasks();
+  if (tasks.length) {
+    const list = items => items.length ? items.map(task => `- ${task.text}`).join('\n') : '- (none)';
+    parts.push(`Pending items status (update data/tasks.json to match):\nDone:\n${list(tasks.filter(taskDone))}\nStill open:\n${list(tasks.filter(task => !taskDone(task)))}`);
+  }
+  if (!changeNotes.length && !tasks.length) parts.push('(Nothing noted yet.)');
+  return parts.join('\n\n') + '\n';
 }
 
-async function copyTaskStatus() {
-  const text = taskStatusText();
+function renderUpdatePreview() {
+  const preview = document.querySelector('#updatesPreview');
+  if (preview) preview.textContent = updatesText();
+}
+
+function renderChangeNotes() {
+  const list = document.querySelector('#noteList');
+  list.innerHTML = changeNotes.length ? changeNotes.map(note => `<li><div><small>${escapeHtml(note.section)}${note.date ? ` · ${escapeHtml(note.date)}` : ''}</small><strong>${escapeHtml(note.title || '(no title)')}</strong>${note.details ? `<p>${escapeHtml(note.details)}</p>` : ''}</div><button class="task-remove" type="button" data-remove-note="${escapeHtml(note.id)}" aria-label="Remove this note"><i class="ph ph-x" aria-hidden="true"></i></button></li>`).join('') : '<li class="note-empty">No notes yet. Add one above, for example a new date or a title to change.</li>';
+  document.querySelector('#noteCount').textContent = `${changeNotes.length} ${changeNotes.length === 1 ? 'note' : 'notes'}`;
+  document.querySelector('#noteClear').hidden = changeNotes.length === 0;
+  renderUpdatePreview();
+}
+
+function setUpdatesMessage(message) {
+  const note = document.querySelector('#updatesMessage');
+  note.textContent = message;
+  clearTimeout(setUpdatesMessage.timer);
+  setUpdatesMessage.timer = setTimeout(() => { note.textContent = ''; }, 5000);
+}
+
+async function copyUpdates() {
+  const text = updatesText();
   try {
     await navigator.clipboard.writeText(text);
   } catch (error) {
@@ -512,42 +615,34 @@ async function copyTaskStatus() {
     document.execCommand('copy');
     area.remove();
   }
-  const note = document.querySelector('#taskExportNote');
-  note.textContent = 'Copied. Paste it to Codex or Claude, and add anything else you want changed.';
-  clearTimeout(copyTaskStatus.timer);
-  copyTaskStatus.timer = setTimeout(() => { note.textContent = 'Ticks are saved in this browser.'; }, 5000);
+  setUpdatesMessage('Copied. Paste it to Codex or Claude in the tracker’s folder.');
 }
 
-async function loadTasks() {
-  try {
-    const response = await fetch(`${TASK_FILE}?t=${Date.now()}`, { cache: 'no-store' });
-    const items = (await response.json()).items;
-    tasks = (Array.isArray(items) ? items : [])
-      .filter(task => task && cleanName(task.text))
-      .map((task, index) => ({ id: String(task.id || `task-${index + 1}`), text: cleanName(task.text), done: Boolean(task.done) }));
-  } catch (error) {
-    tasks = [];
-  }
-  // Forget ticks that now agree with the shared list, or belong to items that were removed.
-  const known = new Map(tasks.map(task => [task.id, task]));
-  Object.keys(taskTicks).forEach(id => {
-    if (!known.has(id) || known.get(id).done === Boolean(taskTicks[id])) delete taskTicks[id];
+function setupUpdates() {
+  document.querySelector('#noteForm').addEventListener('submit', event => {
+    event.preventDefault();
+    const title = cleanName(document.querySelector('#noteTitle').value);
+    const date = cleanName(document.querySelector('#noteDate').value);
+    const details = document.querySelector('#noteDetails').value.trim();
+    if (!title && !date && !details) return;
+    changeNotes.push({ id: String(Date.now()), section: document.querySelector('#noteSection').value, title, date, details });
+    ['#noteTitle', '#noteDate', '#noteDetails'].forEach(id => { document.querySelector(id).value = ''; });
+    saveChangeNotes();
+    document.querySelector('#noteTitle').focus();
   });
-  localStorage.setItem(TASK_STORAGE, JSON.stringify(taskTicks));
-  renderTasks();
-}
-
-function bindTasks() {
-  document.querySelector('#taskList').addEventListener('change', event => {
-    const id = event.target.dataset.task;
-    if (!id) return;
-    taskTicks[id] = event.target.checked;
-    localStorage.setItem(TASK_STORAGE, JSON.stringify(taskTicks));
-    renderTasks();
+  document.querySelector('#noteList').addEventListener('click', event => {
+    const button = event.target.closest('[data-remove-note]');
+    if (!button) return;
+    changeNotes = changeNotes.filter(note => note.id !== button.dataset.removeNote);
+    saveChangeNotes();
   });
-  document.querySelector('#taskCopy').addEventListener('click', copyTaskStatus);
-  renderTasks();
-  loadTasks();
+  document.querySelector('#updatesCopy').addEventListener('click', copyUpdates);
+  document.querySelector('#noteClear').addEventListener('click', () => {
+    if (!confirm('Clear all notes? Do this once Codex or Claude has applied them.')) return;
+    changeNotes = [];
+    saveChangeNotes();
+  });
+  renderChangeNotes();
 }
 
 // ---------- Guest list: read live from the invite's RSVP sheet ----------
@@ -722,6 +817,7 @@ function labelTables() {
 }
 
 updateCountdown();
+setupUpdates();
 bindTasks();
 setupSeatingPlanner();
 setupGuests();

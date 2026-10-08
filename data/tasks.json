@@ -1,4 +1,11 @@
 {
   "updated": "8 Oct 2026",
-  "items": []
+  "groups": [
+    {
+      "id": "wedding-day",
+      "date": "2027-03-06",
+      "title": "Wedding Day",
+      "items": []
+    }
+  ]
 }
