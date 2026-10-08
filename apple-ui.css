@@ -699,35 +699,10 @@ body.drawer-open { overflow: hidden; }
 /* Pending items */
 .pending-empty { margin: 0; padding: 14px 0; color: var(--muted); font-size: 14px; }
 .pending-content { display: grid; gap: 18px; }
-.task-remove { align-self: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--faint); font-size: 16px; cursor: pointer; }
-.task-remove:hover { background: var(--surface-soft); color: #9e3f3f; }
-
-/* Updates: notes and the export for Codex or Claude */
-.updates-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
-.updates-card { padding: 26px; border: 1px solid var(--line); border-radius: var(--radius-lg); background: rgba(255, 255, 255, .88); box-shadow: var(--shadow-soft); }
-.updates-card h3 { margin: 0 0 18px; font-size: 22px; letter-spacing: -.02em; }
-.note-form { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.note-form .note-details, .note-form button { grid-column: 1 / -1; }
-.note-form button { justify-self: start; }
-.note-form select, .note-form textarea { width: 100%; min-height: 44px; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 11px; background: var(--surface); color: var(--ink); font: inherit; }
-.note-form textarea { resize: vertical; }
-.note-form select:focus, .note-form textarea:focus { border-color: var(--accent); outline: 3px solid rgba(2, 62, 125, .17); }
-.note-heading { display: flex; align-items: baseline; justify-content: space-between; margin: 26px 0 10px; padding-top: 20px; border-top: 1px solid var(--line); }
-.note-heading h4 { margin: 0; font-size: 14px; }
-.note-heading span { color: var(--muted); font-size: 12px; font-weight: 600; }
-.note-list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.note-list li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
-.note-list small { display: block; color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
-.note-list strong { display: block; margin-top: 2px; font-size: 14px; }
-.note-list p { margin: 4px 0 0; color: var(--muted); font-size: 13px; white-space: pre-wrap; }
-.note-list .note-empty { display: block; border-style: dashed; color: var(--muted); font-size: 13px; }
-.updates-help { margin: -8px 0 14px; color: var(--muted); font-size: 13px; }
-.updates-preview { max-height: 420px; margin: 0; padding: 16px; overflow: auto; border: 1px solid var(--line); border-radius: 12px; background: var(--surface-soft); color: var(--ink); font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; word-break: break-word; }
-.updates-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
-.updates-message { min-height: 18px; margin: 10px 0 0; color: var(--green); font-size: 12px; font-weight: 600; }
+.pending-copy { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 22px; }
+.pending-copy p { margin: 0; color: var(--muted); font-size: 12px; }
 
 @media (max-width: 900px) {
-  .updates-grid { grid-template-columns: 1fr; }
   .seat-floorplan { min-width: 0; }
   .floor-zone { display: none; }
   .seat-stack { grid-auto-rows: 42px; gap: 7px; }
@@ -756,8 +731,4 @@ body.drawer-open { overflow: hidden; }
   body.printing-seat-plan .seat-stack { grid-auto-rows: 4.6mm; gap: .35mm; }
   body.printing-seat-plan .table-surface-bar { min-height: 3.6mm; }
   body.printing-seat-plan .table-surface-bar strong { font-size: 6.5px; }
-}
-@media (max-width: 620px) {
-  .note-form { grid-template-columns: 1fr; }
-  .updates-card { padding: 20px; }
 }

@@ -7,7 +7,7 @@
   <meta name="description" content="Private wedding plan tracker for Tin and Michelle.">
   <title>Tin &amp; Michelle — Wedding Tracker</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/regular/style.css">
-  <link rel="stylesheet" href="apple-ui.css?v=20261008-5">
+  <link rel="stylesheet" href="apple-ui.css?v=20261008-6">
 </head>
 <body>
 <main class="site">
@@ -22,7 +22,6 @@
       <button type="button" data-view="guests">Guest List</button>
       <button type="button" data-view="seating">Seat Planner</button>
       <button type="button" data-view="pending">Pending Items</button>
-      <button type="button" data-view="updates">Updates</button>
     </nav>
     <button class="icon-button" id="menuButton" type="button" aria-label="Open menu" aria-expanded="false"><i class="ph ph-list" aria-hidden="true"></i></button>
   </div>
@@ -36,7 +35,6 @@
       <button type="button" data-view="guests"><i class="ph ph-users" aria-hidden="true"></i>Guest List</button>
       <button type="button" data-view="seating"><i class="ph ph-table" aria-hidden="true"></i>Seat Planner</button>
       <button type="button" data-view="pending"><i class="ph ph-check-square" aria-hidden="true"></i>Pending Items</button>
-      <button type="button" data-view="updates"><i class="ph ph-note-pencil" aria-hidden="true"></i>Updates</button>
     </div>
   </nav>
 
@@ -62,7 +60,6 @@
             <button type="button" data-view="guests"><span class="menu-icon"><i class="ph ph-users" aria-hidden="true"></i></span><span><strong>Guest List</strong><small>Live RSVPs, plus-ones and dietary notes</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
             <button type="button" data-view="seating"><span class="menu-icon"><i class="ph ph-table" aria-hidden="true"></i></span><span><strong>Seat Planner</strong><small>Arrange the tables and export the plan</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
             <button type="button" data-view="pending"><span class="menu-icon"><i class="ph ph-check-square" aria-hidden="true"></i></span><span><strong>Pending Items</strong><small>Outstanding confirmations and decisions</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
-            <button type="button" data-view="updates"><span class="menu-icon"><i class="ph ph-note-pencil" aria-hidden="true"></i></span><span><strong>Updates</strong><small>Note changes and copy them for Codex or Claude</small></span><i class="ph ph-arrow-right" aria-hidden="true"></i></button>
           </div>
         </div>
 
@@ -250,52 +247,9 @@
 
     <div class="pending-progress" aria-hidden="true"><span id="pendingProgressFill"></span></div>
     <div class="pending-content" id="pendingGroups"></div>
-    <p class="seating-note"><i class="ph ph-info" aria-hidden="true"></i>Ticks are saved in this browser. To add items, new dates or new headings, note them under Updates.</p>
-    <div class="bottom-nav"><button type="button" data-view="updates">Updates</button></div>
-  </section>
-
-  <!-- Updates: notes and one export for Codex or Claude -->
-  <section class="view" id="updates">
-    <div class="page-head">
-      <button class="back" type="button" data-view="home">Overview</button>
-      <h2>Updates</h2>
-      <p>Note anything that should change on the tracker, then copy it all for Codex or Claude in one go.</p>
-    </div>
-
-    <div class="updates-grid">
-      <article class="updates-card">
-        <h3>Note a change</h3>
-        <form class="note-form" id="noteForm">
-          <label class="seat-name-field" for="noteSection"><span>Where</span>
-            <select id="noteSection">
-              <option>Overview</option>
-              <option>Rundown</option>
-              <option>Guest List</option>
-              <option>Seat Planner</option>
-              <option selected>Pending Items</option>
-              <option>Other</option>
-            </select>
-          </label>
-          <label class="seat-name-field" for="noteTitle"><span>Title</span><input id="noteTitle" type="text" maxlength="120" autocomplete="off" placeholder="For example: Cake tasting"></label>
-          <label class="seat-name-field" for="noteDate"><span>Date or time</span><input id="noteDate" type="text" maxlength="60" autocomplete="off" placeholder="For example: 12 Dec 2026, 3:00 PM"></label>
-          <label class="seat-name-field note-details" for="noteDetails"><span>Details</span><textarea id="noteDetails" rows="3" maxlength="600" placeholder="What should be added, changed or removed"></textarea></label>
-          <button class="planner-button planner-button-secondary" type="submit"><i class="ph ph-plus" aria-hidden="true"></i>Add note</button>
-        </form>
-
-        <div class="note-heading"><h4>Noted so far</h4><span id="noteCount">0 notes</span></div>
-        <ul class="note-list" id="noteList"></ul>
-      </article>
-
-      <article class="updates-card">
-        <h3>Send to Codex or Claude</h3>
-        <p class="updates-help">This is exactly what gets copied: your notes, plus which pending items are ticked.</p>
-        <pre class="updates-preview" id="updatesPreview"></pre>
-        <div class="updates-actions">
-          <button class="planner-button planner-button-primary" id="updatesCopy" type="button"><i class="ph ph-copy" aria-hidden="true"></i>Copy for Codex / Claude</button>
-          <button class="planner-button planner-button-secondary" id="noteClear" type="button" hidden>Clear notes</button>
-        </div>
-        <p class="updates-message" id="updatesMessage" role="status" aria-live="polite"></p>
-      </article>
+    <div class="pending-copy">
+      <button class="planner-button planner-button-secondary" id="pendingCopy" type="button"><i class="ph ph-copy" aria-hidden="true"></i>Copy this page for Codex / Claude</button>
+      <p id="pendingCopyNote" role="status" aria-live="polite">Ticks are saved in this browser.</p>
     </div>
   </section>
 
@@ -305,6 +259,6 @@
   </footer>
 </main>
 
-<script src="app.js?v=20261008-5"></script>
+<script src="app.js?v=20261008-6"></script>
 </body>
 </html>
