@@ -653,14 +653,20 @@ body.drawer-open { overflow: hidden; }
 .guest-empty p { max-width: 62ch; margin: 0 0 18px; color: var(--muted); font-size: 14px; }
 .guest-table td small { display: block; color: var(--muted); font-size: 11px; font-weight: 500; }
 .guest-panels { display: grid; gap: 28px; }
-/* Seven columns here (the October table had four) */
-.guest-table { min-width: 860px; }
-.guest-table th:nth-child(2), .guest-table td:nth-child(2) { width: 24%; }
-.guest-table th:nth-child(3), .guest-table td:nth-child(3) { width: 17%; }
-.guest-table th:nth-child(4), .guest-table td:nth-child(4) { width: 16%; text-align: left; }
-.guest-table th:nth-child(5), .guest-table td:nth-child(5) { width: 15%; }
-.guest-table th:nth-child(6), .guest-table td:nth-child(6) { width: 11%; }
-.guest-table th:nth-child(7), .guest-table td:nth-child(7) { width: 130px; text-align: right; }
+/* Let a wide table scroll inside its card instead of stretching the page */
+.guest-panels > * { min-width: 0; }
+.guest-panels .guest-list { max-width: 100%; overflow-x: auto; }
+/* Seven columns here (the October table had four). Desktop and tablet only: on phones the
+   base stylesheet turns each row into a stacked card, and a fixed width would break that. */
+@media (min-width: 821px) {
+  .guest-table { min-width: 860px; }
+  .guest-table th:nth-child(2), .guest-table td:nth-child(2) { width: 24%; }
+  .guest-table th:nth-child(3), .guest-table td:nth-child(3) { width: 17%; }
+  .guest-table th:nth-child(4), .guest-table td:nth-child(4) { width: 16%; text-align: left; }
+  .guest-table th:nth-child(5), .guest-table td:nth-child(5) { width: 15%; }
+  .guest-table th:nth-child(6), .guest-table td:nth-child(6) { width: 11%; }
+  .guest-table th:nth-child(7), .guest-table td:nth-child(7) { width: 130px; text-align: right; }
+}
 
 /* Seat planner: version field, export history */
 .seat-planner-actions { grid-template-columns: minmax(180px, 1fr) 96px auto auto; }
