@@ -5,15 +5,17 @@ It is a plain HTML, CSS and JavaScript site served by GitHub Pages from `main`: 
 
 ## The requests you will usually get
 
-### "Update the pending items" (most common)
-The user will paste a block exported from the tracker's Pending Items page. It contains a JSON object.
+### Pending items (most common)
+The pending items list is `data/tasks.json`. The page only lets people tick items off; **all adding, removing
+and rewording goes through you.** Requests come in two forms:
 
-1. Replace the whole contents of `data/tasks.json` with that JSON, exactly as given.
-2. Do not edit any other file.
-3. Commit with the message `Update pending items` and push.
+- **Plain words**, for example "add a pending item: book the florist" or "remove the photobooth one".
+- **A pasted status note** copied from the tracker. It starts with "Pending items status from the wedding
+  tracker" and lists items under `Done:` and `Still open:`. Set `done` to `true` for every item under Done and
+  `false` for every item under Still open, matching by text. The user often adds extra changes underneath the
+  note in plain words; apply those too.
 
-If the user asks in plain words instead ("add a task to book the florist", "mark the photobooth one as done"),
-edit `data/tasks.json` yourself. The format is:
+The file format:
 
 ```json
 {
@@ -24,10 +26,13 @@ edit `data/tasks.json` yourself. The format is:
 }
 ```
 
-- `id` must be unique and must not change once an item exists. For a new item use the next free `task-N`.
+- `id` must be unique and must never change once an item exists (people's ticks are stored against it).
+  For a new item use the next free `task-N`.
 - `text` is one short sentence. `done` is `true` or `false`.
 - Set `updated` to today's date in the same style.
 - Keep it valid JSON: double quotes, no trailing commas.
+- Edit only this file, then commit as `Update pending items` and push. For this one kind of change you do not
+  need to ask before pushing.
 
 ### "Change the rundown"
 Edit the `<ol>` inside `<section id="rundown">` in `index.html`. One line per time slot:
@@ -42,8 +47,7 @@ changing it resets seat plans saved in people's browsers.
 
 ## Ground rules
 
-- **Never push without the user's go-ahead**, except for the pending-items update above, which they have
-  already asked for by pasting the export.
+- **Never push without the user's go-ahead**, except for pending-items updates as described above.
 - **No build step and no dependencies.** Do not add a framework, bundler or package.json.
 - **The design is approved.** Do not restyle anything unless asked for that specific change.
 - **No guest data in this repo.** The guest list is read live from a Google Sheet and needs a passcode that
@@ -57,5 +61,4 @@ changing it resets seat plans saved in people's browsers.
 ## Checking a change
 
 Serve the folder (`npx serve .`), open it at phone width and desktop width, and click through all five tabs.
-After editing `data/tasks.json`, confirm the Pending Items page lists the items and shows no
-"saved in this browser only" notice.
+After editing `data/tasks.json`, confirm the Pending Items page lists the items with the right ones ticked.

@@ -696,19 +696,10 @@ body.drawer-open { overflow: hidden; }
 .table-surface-bar strong { font-size: 11px; }
 .table-surface-bar span { margin: 0; }
 
-/* Pending items: add and remove */
-.pending-item { grid-template-columns: 22px minmax(0, 1fr) auto; }
-.task-remove { align-self: center; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: var(--faint); font-size: 16px; cursor: pointer; }
-.task-remove:hover { background: var(--surface-soft); color: #9e3f3f; }
-.task-sync { margin: 4px 0 14px; padding: 14px 16px; border: 1px solid rgba(138, 81, 0, .3); border-radius: 13px; background: var(--amber-bg); }
-.task-sync p { margin: 0; color: var(--amber); font-size: 13px; font-weight: 600; }
-.task-sync-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
-.task-sync .task-sync-note { min-height: 0; margin-top: 8px; font-weight: 500; }
-.task-sync .task-sync-note:empty { display: none; }
+/* Pending items: export the ticked status */
 .pending-empty { margin: 0; padding: 14px 0; color: var(--muted); font-size: 14px; }
-.task-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 9px; margin-top: 18px; }
-.task-add input { min-height: 44px; padding: 9px 12px; border: 1px solid var(--line-strong); border-radius: 11px; background: var(--surface); color: var(--ink); }
-.task-add input:focus { border-color: var(--accent); outline: 3px solid rgba(2, 62, 125, .17); }
+.task-export { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.task-export p { margin: 0; color: var(--muted); font-size: 12px; }
 
 @media (max-width: 900px) {
   .seat-floorplan { min-width: 0; }
@@ -717,9 +708,6 @@ body.drawer-open { overflow: hidden; }
   .table-surface-bar { min-height: 34px; }
   .seat-planner-actions { grid-template-columns: 1fr 1fr; }
   .seat-planner-actions .document-name-field { grid-column: 1 / -1; }
-}
-@media (max-width: 620px) {
-  .task-add { grid-template-columns: 1fr; }
 }
 
 @media print {

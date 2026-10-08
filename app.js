@@ -456,82 +456,49 @@ function updateCountdown() {
 }
 
 // ---------- Pending items ----------
-// The shared list lives in data/tasks.json in the repo, so everyone sees the same thing.
-// Ticking, adding or removing here changes this browser's copy only. The tracker then offers
-// an export (for Codex or Claude, or as a file) so the change can be saved back to the repo.
+// The list itself lives in data/tasks.json and is changed by asking Codex or Claude
+// ("add a pending item: ..."). On the page you only tick things off. Ticks are kept in
+// this browser, and "Copy status" turns them into a note to paste back to the assistant.
 
 const TASK_FILE = 'data/tasks.json';
-let sharedTasks = [];
 let tasks = [];
+let taskTicks = loadTaskTicks();
 
-function cleanTasks(list) {
-  return (Array.isArray(list) ? list : [])
-    .filter(task => task && cleanName(task.text))
-    .map((task, index) => ({ id: String(task.id || `task-${index + 1}`), text: cleanName(task.text), done: Boolean(task.done) }));
-}
-
-function sameTasks(a, b) {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
-
-function loadLocalTasks() {
+function loadTaskTicks() {
   try {
     const saved = JSON.parse(localStorage.getItem(TASK_STORAGE));
-    return Array.isArray(saved) ? cleanTasks(saved) : null;
+    return saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
   } catch (error) {
-    return null;
+    return {};
   }
 }
 
-function tasksFileContent() {
-  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-  return JSON.stringify({ updated: today, items: tasks }, null, 2) + '\n';
-}
-
-function tasksPrompt() {
-  return `Please update the pending items in this wedding tracker.\n\nReplace the whole contents of data/tasks.json with the JSON below, exactly as written. Do not change any other file. Then commit with the message "Update pending items" and push.\n\n${tasksFileContent()}`;
-}
-
-function saveTasks() {
-  if (sameTasks(tasks, sharedTasks)) localStorage.removeItem(TASK_STORAGE);
-  else localStorage.setItem(TASK_STORAGE, JSON.stringify(tasks));
-  renderTasks();
-}
-
-function taskChangeCount() {
-  const shared = new Map(sharedTasks.map(task => [task.id, task]));
-  const current = new Map(tasks.map(task => [task.id, task]));
-  let count = 0;
-  tasks.forEach(task => {
-    const before = shared.get(task.id);
-    if (!before || before.done !== task.done || before.text !== task.text) count += 1;
-  });
-  sharedTasks.forEach(task => { if (!current.has(task.id)) count += 1; });
-  return count;
+function taskDone(task) {
+  return Object.prototype.hasOwnProperty.call(taskTicks, task.id) ? Boolean(taskTicks[task.id]) : task.done;
 }
 
 function renderTasks() {
   const list = document.querySelector('#taskList');
-  const complete = tasks.filter(task => task.done).length;
-  const changes = taskChangeCount();
-  list.innerHTML = tasks.length ? tasks.map(task => `<label class="pending-item"><input type="checkbox" data-task="${escapeHtml(task.id)}"${task.done ? ' checked' : ''}><span class="pending-check"><i class="ph ph-check" aria-hidden="true"></i></span><strong>${escapeHtml(task.text)}</strong><button class="task-remove" type="button" data-remove="${escapeHtml(task.id)}" aria-label="Remove: ${escapeHtml(task.text)}"><i class="ph ph-x" aria-hidden="true"></i></button></label>`).join('') : '<p class="pending-empty">Nothing here yet. Add the first to-do below.</p>';
+  const complete = tasks.filter(taskDone).length;
+  list.innerHTML = tasks.length ? tasks.map(task => `<label class="pending-item"><input type="checkbox" data-task="${escapeHtml(task.id)}"${taskDone(task) ? ' checked' : ''}><span class="pending-check"><i class="ph ph-check" aria-hidden="true"></i></span><strong>${escapeHtml(task.text)}</strong></label>`).join('') : '<p class="pending-empty">No pending items yet. To add one, tell Codex or Claude, for example: “Add a pending item: confirm the photobooth vendor.”</p>';
   document.querySelector('#pendingProgressCount').textContent = `${complete} of ${tasks.length} completed`;
   document.querySelector('#pendingProgressFill').style.width = `${tasks.length ? complete / tasks.length * 100 : 0}%`;
   document.querySelector('#homePendingCount').textContent = String(tasks.length - complete);
   document.querySelector('#pendingSectionCount').textContent = tasks.length ? `${complete} / ${tasks.length} complete` : 'No items yet';
-  document.querySelector('#taskSync').hidden = changes === 0;
-  document.querySelector('#taskSyncText').textContent = `${changes} ${changes === 1 ? 'change is' : 'changes are'} saved in this browser only. Export to save ${changes === 1 ? 'it' : 'them'} to the tracker for everyone.`;
+  document.querySelector('#taskExport').hidden = tasks.length === 0;
 }
 
-function setTaskMessage(message) {
-  const note = document.querySelector('#taskSyncNote');
-  note.textContent = message;
-  clearTimeout(setTaskMessage.timer);
-  setTaskMessage.timer = setTimeout(() => { note.textContent = ''; }, 4000);
+// A plain note the assistant can act on: what is ticked here, and what is still open.
+function taskStatusText() {
+  const today = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  const done = tasks.filter(taskDone);
+  const open = tasks.filter(task => !taskDone(task));
+  const lines = items => items.length ? items.map(task => `- ${task.text}`).join('\n') : '- (none)';
+  return `Pending items status from the wedding tracker, ${today}.\n\nPlease update data/tasks.json so it matches this, then commit and push.\n\nDone:\n${lines(done)}\n\nStill open:\n${lines(open)}\n`;
 }
 
-async function copyTasksPrompt() {
-  const text = tasksPrompt();
+async function copyTaskStatus() {
+  const text = taskStatusText();
   try {
     await navigator.clipboard.writeText(text);
   } catch (error) {
@@ -545,65 +512,42 @@ async function copyTasksPrompt() {
     document.execCommand('copy');
     area.remove();
   }
-  setTaskMessage('Copied. Paste it into Codex or Claude in the tracker’s folder.');
+  const note = document.querySelector('#taskExportNote');
+  note.textContent = 'Copied. Paste it to Codex or Claude, and add anything else you want changed.';
+  clearTimeout(copyTaskStatus.timer);
+  copyTaskStatus.timer = setTimeout(() => { note.textContent = 'Ticks are saved in this browser.'; }, 5000);
 }
 
-function downloadTasksFile() {
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(new Blob([tasksFileContent()], { type: 'application/json' }));
-  link.download = 'tasks.json';
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  setTimeout(() => URL.revokeObjectURL(link.href), 2000);
-  setTaskMessage('Downloaded. Replace data/tasks.json in the repo with this file.');
-}
-
-async function loadSharedTasks() {
+async function loadTasks() {
   try {
     const response = await fetch(`${TASK_FILE}?t=${Date.now()}`, { cache: 'no-store' });
-    sharedTasks = cleanTasks((await response.json()).items);
+    const items = (await response.json()).items;
+    tasks = (Array.isArray(items) ? items : [])
+      .filter(task => task && cleanName(task.text))
+      .map((task, index) => ({ id: String(task.id || `task-${index + 1}`), text: cleanName(task.text), done: Boolean(task.done) }));
   } catch (error) {
-    sharedTasks = [];
+    tasks = [];
   }
-  const local = loadLocalTasks();
-  tasks = local && !sameTasks(local, sharedTasks) ? local : sharedTasks.map(task => ({ ...task }));
-  saveTasks();
+  // Forget ticks that now agree with the shared list, or belong to items that were removed.
+  const known = new Map(tasks.map(task => [task.id, task]));
+  Object.keys(taskTicks).forEach(id => {
+    if (!known.has(id) || known.get(id).done === Boolean(taskTicks[id])) delete taskTicks[id];
+  });
+  localStorage.setItem(TASK_STORAGE, JSON.stringify(taskTicks));
+  renderTasks();
 }
 
 function bindTasks() {
-  const list = document.querySelector('#taskList');
-  list.addEventListener('change', event => {
-    const task = tasks.find(item => item.id === event.target.dataset.task);
-    if (!task) return;
-    task.done = event.target.checked;
-    saveTasks();
+  document.querySelector('#taskList').addEventListener('change', event => {
+    const id = event.target.dataset.task;
+    if (!id) return;
+    taskTicks[id] = event.target.checked;
+    localStorage.setItem(TASK_STORAGE, JSON.stringify(taskTicks));
+    renderTasks();
   });
-  list.addEventListener('click', event => {
-    const button = event.target.closest('[data-remove]');
-    if (!button) return;
-    event.preventDefault();
-    tasks = tasks.filter(item => item.id !== button.dataset.remove);
-    saveTasks();
-  });
-  document.querySelector('#taskForm').addEventListener('submit', event => {
-    event.preventDefault();
-    const input = document.querySelector('#taskInput');
-    const text = cleanName(input.value);
-    if (!text) return;
-    tasks.push({ id: `task-${Date.now()}`, text, done: false });
-    input.value = '';
-    saveTasks();
-  });
-  document.querySelector('#taskCopy').addEventListener('click', copyTasksPrompt);
-  document.querySelector('#taskDownload').addEventListener('click', downloadTasksFile);
-  document.querySelector('#taskDiscard').addEventListener('click', () => {
-    if (!confirm('Discard the changes made in this browser and go back to the shared list?')) return;
-    tasks = sharedTasks.map(task => ({ ...task }));
-    saveTasks();
-  });
+  document.querySelector('#taskCopy').addEventListener('click', copyTaskStatus);
   renderTasks();
-  loadSharedTasks();
+  loadTasks();
 }
 
 // ---------- Guest list: read live from the invite's RSVP sheet ----------

@@ -13,8 +13,8 @@ Plain HTML, CSS and JavaScript with no build step. It is based on Vivien's Octob
 
 ## What is saved where
 
-- **Pending items:** in `data/tasks.json` in this repo, so everyone sees the same list. Ticking, adding or
-  removing an item on the page changes your browser's copy only; the page then shows an export bar (see below).
+- **Pending items:** the list is `data/tasks.json` in this repo, so everyone sees the same items. Ticks made on
+  the page are kept in your browser until they are passed on (see below).
 - **Seat plan and exported versions:** in the browser you are using (local storage). They do not sync between
   phones or laptops. Clearing site data removes them.
 - **Guest list:** read live from the invite's RSVP Google Sheet. Nothing about guests is stored in this repo.
@@ -30,17 +30,12 @@ invite repo's README for the script itself.
 
 ## Pending items
 
-Change the list on the page as you like. When your browser's copy differs from the shared file, a yellow bar
-appears with three choices:
-
-- **Copy update for Codex / Claude:** copies a ready-made instruction plus the full list. Paste it into Codex or
-  Claude opened in this folder; it replaces `data/tasks.json`, commits and pushes. `AGENTS.md` tells the assistant
-  what to do with it.
-- **Download tasks.json:** the same list as a file, to replace `data/tasks.json` by hand.
-- **Discard my changes:** go back to the shared list.
-
-Once the shared file matches, the bar disappears by itself. You can also just ask the assistant in plain words,
-for example "add a task to confirm the florist".
+- **To add, remove or reword an item,** tell Codex or Claude in plain words, for example "add a pending item:
+  confirm the florist". It edits `data/tasks.json` and pushes. There is no add button on the page on purpose,
+  so the list is only ever changed in one place.
+- **To tick things off,** use the page. Ticks stay in your browser.
+- **To share your ticks,** press **Copy status for Codex / Claude** and paste it to the assistant. It lists what
+  is done and what is still open, and you can type any other changes underneath before sending.
 
 ## Seat planner
 
