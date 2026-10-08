@@ -15,8 +15,9 @@ const TASK_STORAGE = STORE + 'tasks';
 const WEDDING_DATE = '2027-03-06T00:00:00+08:00';
 const SITE_TITLE = 'Tin & Michelle — Wedding Tracker';
 
-// The same address the invite's RSVP form posts to. The guest list is only returned with the passcode.
-const RSVP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzyE10GIQWKXMSJg0xSJgcidqhKdYOlvuV2aJDi0Txd_OtfAOCoCPlk_iosPsLwQsxJ/exec';
+// The RSVP sheet's script. This is a second deployment of the same script the invite's form posts to:
+// both write to and read from the one Google Sheet. The guest list is only returned with the passcode.
+const RSVP_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzEdqQHlpCtHTz0SBBylvnsrVQxuawXj0eJjLxbRvpBuKKIYlqdB0OZvHsRdLrLjvLR/exec';
 
 // Venue layout: one main table of 12, then rows of six-seat tables as on the floor plan.
 // To change the room, edit TABLE_ROWS here and the grid-template-areas in apple-ui.css.
